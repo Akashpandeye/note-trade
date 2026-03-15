@@ -3,6 +3,7 @@ import yahooFinance from "yahoo-finance2";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+export const runtime = "nodejs";
 
 const TICKERS: { name: string; symbol: string }[] = [
   { name: "NIFTY 50", symbol: "^NSEI" },
@@ -29,7 +30,10 @@ export async function GET() {
     const results = await Promise.allSettled(
       TICKERS.map(async ({ name, symbol }) => {
         try {
-          const quote = await yahooFinance.quote(symbol);
+          const quote = (await yahooFinance.quote(symbol)) as
+            | { regularMarketPrice?: number; regularMarketOpen?: number }
+            | null
+            | undefined;
           const price = quote?.regularMarketPrice ?? quote?.regularMarketOpen ?? null;
           return { name, symbol, price: price != null ? formatPrice(price) : null };
         } catch {
