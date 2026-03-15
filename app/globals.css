@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pnl-positive: #16a34a;
+  --pnl-negative: #dc2626;
+  --pnl-zero: #6b7280;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100;
+}
+
+.pnl-positive {
+  color: var(--pnl-positive);
+}
+.pnl-negative {
+  color: var(--pnl-negative);
+}
+.pnl-zero {
+  color: var(--pnl-zero);
+}
