@@ -1,10 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { getTradesForDashboard, getAllTradesForStats } from "@/lib/trades";
 import { StatsCards } from "@/components/dashboard/StatsCards";
-import { EquityCurve } from "@/components/dashboard/EquityCurve";
 import { CalendarHeatmap } from "@/components/dashboard/CalendarHeatmap";
 import { MonthlyBarChart } from "@/components/dashboard/MonthlyBarChart";
+import { LastTradesBarChart } from "@/components/dashboard/LastTradesBarChart";
 import { RecentTrades } from "@/components/dashboard/RecentTrades";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -20,19 +21,36 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400">Overview of your trading performance</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="text-gray-500 dark:text-gray-400">Overview of your trading performance</p>
+        </div>
+        <Link
+          href="/upload"
+          className="inline-flex shrink-0 items-center justify-center rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-500"
+        >
+          Upload CSV
+        </Link>
       </div>
       <StatsCards trades={allTrades} />
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader><CardTitle>Equity Curve</CardTitle></CardHeader>
-          <CardContent><EquityCurve trades={allTrades} /></CardContent>
+      {/* Flex: Last 7 Trades, Monthly P&L */}
+      <div className="flex flex-wrap gap-4">
+        <Card className="min-w-[260px] flex-1 overflow-hidden rounded-2xl border-gray-200/80 shadow-sm dark:border-gray-800/80">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold">Last 7 Trades — P&L</CardTitle>
+          </CardHeader>
+          <CardContent className="w-full pt-0">
+            <LastTradesBarChart trades={recentTrades} />
+          </CardContent>
         </Card>
-        <Card>
-          <CardHeader><CardTitle>Monthly P&L</CardTitle></CardHeader>
-          <CardContent><MonthlyBarChart trades={allTrades} /></CardContent>
+        <Card className="min-w-[260px] flex-1 overflow-hidden rounded-2xl border-gray-200/80 shadow-sm dark:border-gray-800/80">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold">Monthly P&L</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <MonthlyBarChart trades={allTrades} />
+          </CardContent>
         </Card>
       </div>
       <Card>

@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes marquee-infinite {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-infinite {
+  animation: marquee-infinite 50s linear infinite;
+}
+
 :root {
   --pnl-positive: #16a34a;
   --pnl-negative: #dc2626;

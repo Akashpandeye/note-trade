@@ -1,5 +1,19 @@
 import Papa from "papaparse";
-import type { ZerodhaCsvRow, TradeLeg, MatchedTrade } from "@/types";
+import type { TradeLeg, MatchedTrade } from "@/types";
+
+/** Normalize header to lowercase with underscores (e.g. "Trade ID" -> "trade_id") */
+function normalizeHeader(h: string): string {
+  return h.trim().toLowerCase().replace(/\s+/g, "_");
+}
+
+/** Get value from row using multiple possible header names */
+function getCol(row: Record<string, string>, ...keys: string[]): string {
+  for (const k of keys) {
+    const v = row[k];
+    if (v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
+  }
+  return "";
+}
 
 /** Normalize Zerodha trade_type to "buy" | "sell" */
 function normalizeTradeType(raw: string): "buy" | "sell" {
@@ -9,41 +23,57 @@ function normalizeTradeType(raw: string): "buy" | "sell" {
   return lower.includes("sell") ? "sell" : "buy";
 }
 
-/** Parse Zerodha tradebook CSV into typed legs. Dedup by trade_id. */
-export function parseZerodhaCsv(csvText: string): TradeLeg[] {
-  const parsed = Papa.parse<ZerodhaCsvRow>(csvText, {
+/** Parse Zerodha tradebook CSV into typed legs. Dedup by trade_id. Accepts flexible column names and delimiter. */
+export function parseZerodhaCsv(csvText: string, delimiter = ","): TradeLeg[] {
+  const trimmed = csvText.replace(/^\uFEFF/, ""); // strip BOM
+  const parsed = Papa.parse<Record<string, string>>(trimmed, {
     header: true,
     skipEmptyLines: true,
+    delimiter,
   });
 
   if (parsed.errors.length > 0) {
     throw new Error(parsed.errors.map((e) => e.message).join("; "));
   }
 
+  if (!parsed.data || parsed.data.length === 0) {
+    throw new Error("CSV has no data rows. Check that the file is a Zerodha tradebook export.");
+  }
+
+  const normalizedData = parsed.data.map((row: Record<string, unknown>) => {
+    const out: Record<string, string> = {};
+    for (const key of Object.keys(row)) {
+      out[normalizeHeader(key)] = row[key] == null ? "" : String(row[key]);
+    }
+    return out;
+  });
+
   const seenTradeIds = new Set<string>();
   const legs: TradeLeg[] = [];
 
-  for (const row of parsed.data) {
-    const tradeId = (row.trade_id ?? "").trim();
+  for (const row of normalizedData) {
+    const tradeId = getCol(row, "trade_id", "tradeid", "trade id") || getCol(row, "order_id", "orderid", "order id");
     if (!tradeId || seenTradeIds.has(tradeId)) continue;
     seenTradeIds.add(tradeId);
 
-    const qty = parseInt(row.quantity ?? "0", 10);
-    const price = parseFloat(row.price ?? "0");
+    const qtyStr = getCol(row, "quantity", "qty", "qty.");
+    const priceStr = getCol(row, "price", "avg price", "avg_price");
+    const qty = parseInt(qtyStr || "0", 10);
+    const price = parseFloat(priceStr || "0");
     if (isNaN(qty) || isNaN(price) || qty <= 0) continue;
 
     legs.push({
-      symbol: (row.symbol ?? "").trim(),
-      isin: (row.isin ?? "").trim(),
-      trade_date: (row.trade_date ?? "").trim(),
-      exchange: (row.exchange ?? "").trim(),
-      segment: (row.segment ?? "").trim(),
-      trade_type: normalizeTradeType(row.trade_type ?? ""),
+      symbol: getCol(row, "symbol", "instrument", "tradingsymbol"),
+      isin: getCol(row, "isin"),
+      trade_date: getCol(row, "trade_date", "trade date", "date", "order_date", "order date"),
+      exchange: getCol(row, "exchange"),
+      segment: getCol(row, "segment"),
+      trade_type: normalizeTradeType(getCol(row, "trade_type", "trade type", "transaction type", "type")),
       quantity: qty,
       price,
       trade_id: tradeId,
-      order_id: (row.order_id ?? "").trim(),
-      executed_at: (row.order_execution_time ?? "").trim(),
+      order_id: getCol(row, "order_id", "orderid", "order id"),
+      executed_at: getCol(row, "order_execution_time", "order execution time", "execution_time", "execution time", "time"),
     });
   }
 
@@ -123,10 +153,155 @@ export function matchTradesFifo(legs: TradeLeg[]): MatchedTrade[] {
   return result;
 }
 
+/** Parse numeric value that may contain commas (e.g. "1,03,061.00") */
+function parseNum(s: string): number {
+  const cleaned = String(s).replace(/,/g, "").trim();
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+
+/** Find header row index and delimiter. Zerodha P&L has title lines then a row with Symbol, Quantity, etc. */
+function findHeaderRowAndDelimiter(csvText: string): { headerRowIndex: number; delimiter: string } {
+  const lines = csvText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  for (let i = 0; i < Math.min(lines.length, 50); i++) {
+    const line = lines[i];
+    const hasSeparator = line.includes(",") || line.includes("\t");
+    const lower = line.toLowerCase();
+    const hasSymbolCol = /\b(symbol|script|scrip|instrument|tradingsymbol)\b/.test(lower);
+    const hasQuantityCol = /\b(quantity|qty)\b/.test(lower);
+    const hasDataCol = /\b(buy\s*value|sell\s*value|realized\s*p&l|realized\s*pnl)\b/.test(lower);
+    if (hasSeparator && hasSymbolCol && hasQuantityCol && (hasDataCol || lower.includes("buy") || lower.includes("sell") || lower.includes("realized"))) {
+      const tabCount = (line.match(/\t/g) || []).length;
+      const commaCount = (line.match(/,/g) || []).length;
+      const delimiter = tabCount >= commaCount ? "\t" : ",";
+      return { headerRowIndex: i, delimiter };
+    }
+  }
+  return { headerRowIndex: 0, delimiter: "," };
+}
+
 /**
- * Parse Zerodha CSV and return matched trades with P&L (FIFO).
+ * Parse Zerodha summary/P&L format: Symbol, Quantity, Buy Value, Sell Value, Realized P&L.
+ * One row per script with aggregated values.
+ * Supports tab- or comma-delimited; optional delimiter when CSV is already sliced to header row.
+ */
+export function parseZerodhaSummaryFormat(csvText: string, delimiter?: string): MatchedTrade[] {
+  const trimmed = csvText.replace(/^\uFEFF/, "");
+  let csvToParse = trimmed;
+  let delim = delimiter;
+  if (delim === undefined) {
+    const { headerRowIndex, delimiter: d } = findHeaderRowAndDelimiter(trimmed);
+    delim = d;
+    const lines = trimmed.split(/\r?\n/).filter((l) => l.trim() !== "");
+    csvToParse = lines.slice(headerRowIndex).join("\n");
+  }
+  const parsed = Papa.parse<Record<string, string>>(csvToParse, {
+    header: true,
+    skipEmptyLines: true,
+    delimiter: delim,
+  });
+
+  if (parsed.errors.length > 0) {
+    throw new Error(parsed.errors.map((e) => e.message).join("; "));
+  }
+
+  if (!parsed.data || parsed.data.length === 0) {
+    throw new Error("CSV has no data rows.");
+  }
+
+  const normalizedData = parsed.data.map((row: Record<string, unknown>) => {
+    const out: Record<string, string> = {};
+    for (const key of Object.keys(row)) {
+      out[normalizeHeader(key)] = row[key] == null ? "" : String(row[key]);
+    }
+    return out;
+  });
+
+  const result: MatchedTrade[] = [];
+  const reportDate = new Date().toISOString().slice(0, 10);
+
+  for (let i = 0; i < normalizedData.length; i++) {
+    const row = normalizedData[i];
+    const symbol = getCol(row, "script", "symbol", "instrument", "tradingsymbol", "scrip");
+    if (!symbol) continue;
+
+    const qty = parseNum(getCol(row, "quantity", "qty", "qty."));
+    const buyValue = parseNum(getCol(row, "buy_value", "buy value", "total_buy", "total buy"));
+    const sellValue = parseNum(getCol(row, "sell_value", "sell value", "total_sell", "total sell"));
+    const realizedPnl = parseNum(
+      getCol(row, "realized_p&l", "realized_pnl", "realized p&l", "realized pnl", "realized_p_l", "p&l", "pnl", "realized_pl")
+    );
+
+    if (qty <= 0 && realizedPnl === 0 && buyValue === 0 && sellValue === 0) continue;
+
+    const entryPrice = qty > 0 ? buyValue / qty : 0;
+    const exitPrice = qty > 0 ? sellValue / qty : 0;
+
+    result.push({
+      date: reportDate,
+      symbol,
+      segment: getCol(row, "segment", "exchange") || "EQ",
+      direction: "sell",
+      quantity: qty > 0 ? qty : 1,
+      entryPrice,
+      exitPrice,
+      pnl: realizedPnl,
+      trade_id: `summary-${symbol}-${i}`,
+    });
+  }
+
+  return result;
+}
+
+/**
+ * Parse Zerodha CSV and return matched trades.
+ * Tries summary format first (Symbol, Quantity, Buy/Sell Value, Realized P&L), then tradebook (Trade ID, etc.).
+ * Handles tab- or comma-delimited files and skips title lines (P&L Statement, Client ID, etc.).
  */
 export function parseZerodhaCsvToMatchedTrades(csvText: string): MatchedTrade[] {
-  const legs = parseZerodhaCsv(csvText);
+  const trimmed = csvText.replace(/^\uFEFF/, "");
+  const { headerRowIndex, delimiter } = findHeaderRowAndDelimiter(trimmed);
+  const lines = trimmed.split(/\r?\n/).filter((l) => l.trim() !== "");
+  const csvFromHeader = lines.slice(headerRowIndex).join("\n");
+  const parsed = Papa.parse<Record<string, string>>(csvFromHeader, {
+    header: true,
+    skipEmptyLines: true,
+    delimiter,
+  });
+
+  if (parsed.errors.length > 0) {
+    throw new Error(parsed.errors.map((e) => e.message).join("; "));
+  }
+
+  if (!parsed.data || parsed.data.length === 0) {
+    throw new Error("CSV has no data rows.");
+  }
+
+  const normalizedData = parsed.data.map((row: Record<string, unknown>) => {
+    const out: Record<string, string> = {};
+    for (const key of Object.keys(row)) {
+      out[normalizeHeader(key)] = row[key] == null ? "" : String(row[key]);
+    }
+    return out;
+  });
+
+  const firstRow = normalizedData[0];
+  const hasScriptOrSymbol = firstRow && ["script", "symbol", "instrument", "tradingsymbol", "scrip"].some((k) => firstRow[k] !== undefined && String(firstRow[k]).trim() !== "");
+
+  if (hasScriptOrSymbol) {
+    const summaryResult = parseZerodhaSummaryFormat(csvFromHeader, delimiter);
+    if (summaryResult.length > 0) return summaryResult;
+  }
+
+  const legs = parseZerodhaCsv(csvFromHeader, delimiter);
+  if (legs.length === 0) {
+    const summaryFallback = parseZerodhaSummaryFormat(csvFromHeader, delimiter);
+    if (summaryFallback.length > 0) return summaryFallback;
+    const sampleKeys = firstRow ? Object.keys(firstRow).slice(0, 12).join(", ") : "none";
+    throw new Error(
+      `No valid trade rows found. Your CSV columns (sample): ${sampleKeys}. For tradebook CSV we need: Symbol, Trade Date, Quantity, Price, Trade Type, Trade ID or Order ID. For summary CSV we need: Script/Symbol and at least one of Quantity, Buy Value, Sell Value, Realized P&L.`
+    );
+  }
+
   return matchTradesFifo(legs);
 }

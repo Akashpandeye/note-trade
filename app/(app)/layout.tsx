@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IndexMarquee } from "@/components/layout/IndexMarquee";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,8 +11,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </Link>
           <nav className="flex gap-4">
             <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">Dashboard</Link>
+            <Link href="/book" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">Book</Link>
             <Link href="/trades" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">Trades</Link>
-            <Link href="/upload" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">Upload</Link>
             <Link href="/analytics" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">Analytics</Link>
             <form action="/auth/signout" method="post" className="inline">
               <button type="submit" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">Sign out</button>
@@ -19,6 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
+      <IndexMarquee />
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</main>
     </div>
   );
