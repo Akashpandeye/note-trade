@@ -30,7 +30,8 @@ export async function GET() {
     const results = await Promise.allSettled(
       TICKERS.map(async ({ name, symbol }) => {
         try {
-          const quote = (await yahooFinance.quote(symbol)) as
+          const raw = await yahooFinance.quote(symbol);
+          const quote = raw as unknown as
             | { regularMarketPrice?: number; regularMarketOpen?: number }
             | null
             | undefined;
