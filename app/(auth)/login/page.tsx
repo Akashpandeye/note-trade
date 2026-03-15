@@ -19,9 +19,13 @@ export default function LoginPage() {
   async function signInWithGoogle() {
     setLoading(true);
     setError(null);
+    const appOrigin =
+      typeof process.env.NEXT_PUBLIC_APP_URL === "string" && process.env.NEXT_PUBLIC_APP_URL
+        ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")
+        : window.location.origin;
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${appOrigin}/auth/callback` },
     });
     if (err) {
       setError(err.message);
@@ -56,7 +60,9 @@ export default function LoginPage() {
     const { error: err } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        emailRedirectTo: `${typeof process.env.NEXT_PUBLIC_APP_URL === "string" && process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "") : window.location.origin}/auth/callback`,
+      },
     });
     if (err) {
       setError(err.message);

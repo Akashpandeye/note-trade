@@ -20,6 +20,7 @@ git push -u origin main
 
    - `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL  
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon/public key  
+   - `NEXT_PUBLIC_APP_URL` — Your live app URL (e.g. `https://note-trade-murex.vercel.app`). **Required** so Google sign-in redirects back to Vercel, not localhost.
 
    If you use the Supabase Postgres connection string elsewhere in the app, add:
 
@@ -27,13 +28,21 @@ git push -u origin main
 
 4. **Deploy** — Vercel will run `npm run build` and deploy. Use the generated URL (e.g. `https://notetrade-xxx.vercel.app`).
 
-## 3. Supabase after deploy
+## 3. Supabase (required — fixes “redirect to localhost after Google sign-in”)
 
-1. In **Supabase Dashboard** → **Authentication** → **URL Configuration**:
-   - **Site URL**: set to your production URL (e.g. `https://notetrade-xxx.vercel.app`)
-   - **Redirect URLs**: add `https://notetrade-xxx.vercel.app/**` and `https://notetrade-xxx.vercel.app/auth/callback`
+If you see the landing page on localhost or a broken URL after signing in with Google, Supabase is still using localhost. Do this **before** testing Google sign-in on Vercel:
 
-2. If you use **Google OAuth**: the redirect URI in Google Cloud Console is still `https://<project-ref>.supabase.co/auth/v1/callback` (Supabase’s callback). No change needed there; just ensure the Supabase redirect list above includes your app URL.
+1. Open **Supabase Dashboard** → **Authentication** → **URL Configuration**.
+2. Set **Site URL** to your Vercel URL, e.g. `https://note-trade-murex.vercel.app` (no trailing slash).
+3. Under **Redirect URLs**, add:
+   - `https://note-trade-murex.vercel.app/auth/callback`
+   - `https://note-trade-murex.vercel.app/**`  
+   (Replace with your real Vercel URL if different.) You can keep `http://localhost:3000/*` for local dev.
+4. **Save**.
+
+5. In **Vercel** → Project → Settings → Environment Variables, add **NEXT_PUBLIC_APP_URL** = `https://note-trade-murex.vercel.app` (no trailing slash), then redeploy.
+
+After this, Google sign-in should redirect back to your Vercel app and then to the dashboard.
 
 ## 4. Optional: custom domain
 
