@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { getTradesForDashboard, getAllTradesForStats } from "@/lib/trades";
 import { StatsCards } from "@/components/dashboard/StatsCards";
+import { DashboardUploadButton } from "@/components/dashboard/DashboardUploadButton";
 import { CalendarHeatmap } from "@/components/dashboard/CalendarHeatmap";
 import { MonthlyBarChart } from "@/components/dashboard/MonthlyBarChart";
 import { LastTradesBarChart } from "@/components/dashboard/LastTradesBarChart";
@@ -26,12 +26,7 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-400">Overview of your trading performance</p>
         </div>
-        <Link
-          href="/upload"
-          className="inline-flex shrink-0 items-center justify-center rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-500"
-        >
-          Upload CSV
-        </Link>
+        <DashboardUploadButton />
       </div>
       <StatsCards trades={allTrades} />
       {/* Flex: Last 7 Trades, Monthly P&L */}
