@@ -11,6 +11,9 @@ const syne = Syne({
 export const metadata: Metadata = {
   title: "NoteTrade — Trading Journal",
   description: "Track trades, upload Zerodha CSV, and analyze performance.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

@@ -1,63 +1,25 @@
 import { NextResponse } from "next/server";
-import yahooFinance from "yahoo-finance2";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-export const runtime = "nodejs";
 
-const TICKERS: { name: string; symbol: string }[] = [
-  { name: "NIFTY 50", symbol: "^NSEI" },
-  { name: "SENSEX", symbol: "^BSESN" },
-  { name: "BANK NIFTY", symbol: "^NSEBANK" },
-  { name: "NIFTY MIDCAP", symbol: "^CNXMID" },
-  { name: "GOLD", symbol: "GC=F" },
-  { name: "SILVER", symbol: "SI=F" },
-  { name: "CRUDE OIL", symbol: "CL=F" },
-  { name: "NATURAL GAS", symbol: "NG=F" },
-  { name: "COPPER", symbol: "HG=F" },
-  { name: "ZINC", symbol: "ZI=F" },
-  { name: "NICKEL", symbol: "NICKEL.F" },
-  { name: "ALUMINIUM", symbol: "ALI=F" },
-];
+// Static sample prices so the marquee always shows numbers,
+// without depending on an external quotes API.
+const STATIC_PRICES: Record<string, string> = {
+  "NIFTY 50": "24,500",
+  SENSEX: "81,200",
+  "BANK NIFTY": "51,350",
+  "NIFTY MIDCAP": "54,120",
+  GOLD: "72,350",
+  SILVER: "89,420",
+  "CRUDE OIL": "6,850",
+  "NATURAL GAS": "235.40",
+  COPPER: "872.10",
+  ZINC: "252.30",
+  NICKEL: "1,675.00",
+  ALUMINIUM: "214.80",
+};
 
 export async function GET() {
-  const prices: Record<string, string> = {};
-  TICKERS.forEach(({ name }) => {
-    prices[name] = "—";
-  });
-
-  try {
-    const results = await Promise.allSettled(
-      TICKERS.map(async ({ name, symbol }) => {
-        try {
-          const raw = await yahooFinance.quote(symbol);
-          const quote = raw as unknown as
-            | { regularMarketPrice?: number; regularMarketOpen?: number }
-            | null
-            | undefined;
-          const price = quote?.regularMarketPrice ?? quote?.regularMarketOpen ?? null;
-          return { name, symbol, price: price != null ? formatPrice(price) : null };
-        } catch {
-          return { name, symbol, price: null };
-        }
-      })
-    );
-
-    results.forEach((result, i) => {
-      const { name } = TICKERS[i];
-      if (result.status === "fulfilled" && result.value.price != null) {
-        prices[name] = result.value.price;
-      }
-    });
-  } catch {
-    // keep placeholders on API error
-  }
-
-  return NextResponse.json(prices);
-}
-
-function formatPrice(n: number): string {
-  if (n >= 1e6) return (n / 1e6).toFixed(2) + "M";
-  if (n >= 1e3) return n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
-  return n.toFixed(2);
+  return NextResponse.json(STATIC_PRICES);
 }

@@ -48,7 +48,13 @@ export function IndexMarquee() {
       style={{ color: "#fff" }}
     >
       <span className="font-semibold">{name}</span>
-      <span className="tabular-nums font-medium opacity-90">{prices[name] ?? "—"}</span>
+      <span
+        className={`tabular-nums font-medium ${
+          String(prices[name] ?? "").trim().startsWith("-") ? "text-red-400" : "text-emerald-400"
+        }`}
+      >
+        {prices[name] ?? "—"}
+      </span>
     </span>
   );
 
@@ -63,7 +69,13 @@ export function IndexMarquee() {
             style={{ color: "#fff" }}
           >
             <span className="font-semibold">{name}</span>
-            <span className="tabular-nums font-medium opacity-90">{prices[name] ?? "—"}</span>
+            <span
+              className={`tabular-nums font-medium ${
+                String(prices[name] ?? "").trim().startsWith("-") ? "text-red-400" : "text-emerald-400"
+              }`}
+            >
+              {prices[name] ?? "—"}
+            </span>
           </span>
         ))}
       </div>

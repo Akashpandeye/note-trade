@@ -5,8 +5,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? new URL(request.url).origin;
+  const baseUrl = getBaseUrl(request);
 
   if (code) {
     const supabase = await createServerSupabaseClient();
@@ -17,4 +16,12 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.redirect(`${baseUrl}/login?error=auth`);
+}
+
+function getBaseUrl(request: Request): string {
+  const url = new URL(request.url);
+  const proto =
+    request.headers.get("x-forwarded-proto") ?? (url.protocol ? url.protocol.replace(":", "") : "http");
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? url.host;
+  return `${proto}://${host}`.replace(/\/$/, "");
 }

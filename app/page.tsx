@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import { redirect } from "next/navigation";
 
@@ -22,9 +23,16 @@ export default async function HomePage() {
       />
 
       <header className="relative z-10 flex items-center justify-between px-6 py-6 sm:px-8">
-        <span className="font-syne text-xl font-bold tracking-tight text-white">
-          NoteTrade
-        </span>
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/logo-notetrade.png"
+            alt="note-trade"
+            width={160}
+            height={40}
+            className="h-10 w-auto"
+            priority
+          />
+        </Link>
         <Link
           href="/login"
           className="rounded-full border border-gray-600 bg-gray-900/50 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition hover:border-gray-500 hover:bg-gray-800/80"

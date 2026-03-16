@@ -41,10 +41,10 @@ export function TradeTable({ trades, loading }: TradeTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
-      <table className="w-full text-left text-sm">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white/95 shadow-sm dark:border-gray-800 dark:bg-gray-900/90">
+      <table className="w-full text-left text-sm text-gray-900 dark:text-gray-100">
         <thead>
-          <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50">
+          <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/70">
             {COLS.map((c) => (
               <th key={c} className="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">
                 {c}
@@ -66,7 +66,7 @@ export function TradeTable({ trades, loading }: TradeTableProps) {
                 key={t.id}
                 className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50"
               >
-                <td className="px-4 py-2">
+            <td className="px-4 py-2">
                   <Link href={`/trades/${t.id}`} className="text-green-700 hover:underline dark:text-green-400">
                     {t.trade_date}
                   </Link>
