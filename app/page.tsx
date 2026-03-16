@@ -25,13 +25,16 @@ export default async function HomePage() {
       <header className="relative z-10 flex items-center justify-between px-6 py-6 sm:px-8">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/logo-notetrade.png"
+            src="/logo-mark.png"
             alt="note-trade"
-            width={160}
-            height={40}
-            className="h-10 w-auto"
+            width={56}
+            height={56}
+            className="h-12 w-auto"
             priority
           />
+          <span className="hidden text-lg font-semibold tracking-tight text-white sm:inline">
+            note<span className="text-emerald-400">trade</span>
+          </span>
         </Link>
         <Link
           href="/login"
