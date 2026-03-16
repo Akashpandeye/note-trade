@@ -94,6 +94,47 @@ function currentStreak(trades: Trade[]): { wins: number; losses: number } {
   return { wins, losses };
 }
 
+function longShortStats(trades: Trade[]): {
+  long: { total: number; wins: number; losses: number; winRate: number; avgPnl: number };
+  short: { total: number; wins: number; losses: number; winRate: number; avgPnl: number };
+} {
+  const normSide = (t: Trade): "long" | "short" => {
+    const raw = (t.trade_type ?? "").toString().toUpperCase();
+    if (raw.includes("SHORT") || raw === "SELL") return "short";
+    return "long";
+  };
+  const buckets = {
+    long: [] as Trade[],
+    short: [] as Trade[],
+  };
+  for (const t of trades) {
+    buckets[normSide(t)].push(t);
+  }
+  const calc = (sideTrades: Trade[]) => {
+    const total = sideTrades.length;
+    if (total === 0) {
+      return { total: 0, wins: 0, losses: 0, winRate: 0, avgPnl: 0 };
+    }
+    let wins = 0;
+    let losses = 0;
+    let pnlSum = 0;
+    for (const t of sideTrades) {
+      const pnl = t.net_pnl ?? t.pnl ?? 0;
+      pnlSum += pnl;
+      if (pnl > 0) wins++;
+      else if (pnl < 0) losses++;
+    }
+    const winRate = (wins / total) * 100;
+    const avgPnl = pnlSum / total;
+    return { total, wins, losses, winRate, avgPnl };
+  };
+
+  return {
+    long: calc(buckets.long),
+    short: calc(buckets.short),
+  };
+}
+
 const WIN_COLOR = "#16a34a";
 const LOSS_COLOR = "#dc2626";
 
@@ -127,6 +168,7 @@ export function AnalyticsCharts({ trades }: AnalyticsChartsProps) {
   const byTime = pnlByTimeOfDay(trades);
   const bySegment = segmentBreakdown(trades);
   const streak = currentStreak(trades);
+  const longShort = longShortStats(trades);
 
   if (trades.length === 0) {
     return (
@@ -148,6 +190,88 @@ export function AnalyticsCharts({ trades }: AnalyticsChartsProps) {
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 dark:border-red-900 dark:bg-red-950/50">
           <span className="text-sm text-red-800 dark:text-red-200">Loss streak</span>
           <p className="text-xl font-bold text-red-700 dark:text-red-300">{streak.losses}</p>
+        </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-900">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+            Long performance
+          </h3>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Trades where you were net long (buy first, sell later).
+          </p>
+          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <div>
+              <dt className="text-gray-500 dark:text-gray-400">Total trades</dt>
+              <dd className="font-semibold text-gray-900 dark:text-white">{longShort.long.total}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-gray-400">Win trades</dt>
+              <dd className="font-semibold text-green-600 dark:text-green-400">
+                {longShort.long.wins}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-gray-400">Loss trades</dt>
+              <dd className="font-semibold text-red-600 dark:text-red-400">
+                {longShort.long.losses}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-gray-400">Win rate</dt>
+              <dd className="font-semibold text-gray-900 dark:text-white">
+                {longShort.long.winRate.toFixed(1)}%
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-gray-400">Avg P&L / trade</dt>
+              <dd className="font-semibold text-gray-900 dark:text-white">
+                {longShort.long.avgPnl.toFixed(2)}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-900">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+            Short performance
+          </h3>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Trades where you were net short (sell/short first, buy back later).
+          </p>
+          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <div>
+              <dt className="text-gray-500 dark:text-gray-400">Total trades</dt>
+              <dd className="font-semibold text-gray-900 dark:text-white">
+                {longShort.short.total}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-gray-400">Win trades</dt>
+              <dd className="font-semibold text-green-600 dark:text-green-400">
+                {longShort.short.wins}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-gray-400">Loss trades</dt>
+              <dd className="font-semibold text-red-600 dark:text-red-400">
+                {longShort.short.losses}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-gray-400">Win rate</dt>
+              <dd className="font-semibold text-gray-900 dark:text-white">
+                {longShort.short.winRate.toFixed(1)}%
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-gray-400">Avg P&L / trade</dt>
+              <dd className="font-semibold text-gray-900 dark:text-white">
+                {longShort.short.avgPnl.toFixed(2)}
+              </dd>
+            </div>
+          </dl>
         </div>
       </div>
 
