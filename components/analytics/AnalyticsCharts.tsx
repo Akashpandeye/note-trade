@@ -99,8 +99,12 @@ function longShortStats(trades: Trade[]): {
   short: { total: number; wins: number; losses: number; winRate: number; avgPnl: number };
 } {
   const normSide = (t: Trade): "long" | "short" => {
-    const raw = (t.trade_type ?? "").toString().toUpperCase();
-    if (raw.includes("SHORT") || raw === "SELL") return "short";
+    const raw = (t.trade_type ?? "").toString().trim().toLowerCase();
+    // In this app, `trade_type` is stored as the *entry direction* from uploads/manual entry:
+    // - "buy" => long
+    // - "sell" => short
+    // Anything else defaults to long.
+    if (raw.startsWith("sell")) return "short";
     return "long";
   };
   const buckets = {

@@ -131,7 +131,9 @@ export function matchTradesFifo(legs: TradeLeg[]): MatchedTrade[] {
           date: exitDate,
           symbol,
           segment,
-          direction: "sell",
+          // Entry direction for this matched (closed) trade.
+          // Current matcher supports long trades (buy -> sell), so direction is "buy".
+          direction: "buy",
           quantity: matchQty,
           entryPrice,
           exitPrice: sellPrice,
@@ -241,7 +243,9 @@ export function parseZerodhaSummaryFormat(csvText: string, delimiter?: string): 
       date: reportDate,
       symbol,
       segment: getCol(row, "segment", "exchange") || "EQ",
-      direction: "sell",
+      // Summary format is aggregated realized P&L (typically long buy->sell for delivery/positions).
+      // We store direction as entry-side for analytics consistency.
+      direction: "buy",
       quantity: qty > 0 ? qty : 1,
       entryPrice,
       exitPrice,
