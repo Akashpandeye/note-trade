@@ -15,8 +15,8 @@ export default function TradesPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<TradeFiltersType>({});
-  const [sortBy, setSortBy] = useState("trade_date");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sortBy] = useState("trade_date");
+  const [sortDir] = useState<"asc" | "desc">("desc");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();

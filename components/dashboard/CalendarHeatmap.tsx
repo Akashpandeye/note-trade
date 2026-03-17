@@ -42,8 +42,6 @@ export function CalendarHeatmap({ trades, loading }: CalendarHeatmapProps) {
   }
 
   const dates = Array.from(dayPnl.keys()).sort();
-  const min = Math.min(...Array.from(dayPnl.values()));
-  const max = Math.max(...Array.from(dayPnl.values()));
   const scale = (pnl: number) => {
     if (pnl === 0) return "bg-gray-300 dark:bg-gray-600";
     if (pnl > 0) return "bg-green-500 dark:bg-green-600";

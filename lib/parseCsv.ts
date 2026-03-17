@@ -110,7 +110,7 @@ export function matchTradesFifo(legs: TradeLeg[]): MatchedTrade[] {
           new Date(b.executed_at || b.trade_date).getTime()
       );
 
-    let buyQueue: { leg: TradeLeg; qtyLeft: number }[] = buys.map((leg) => ({
+    const buyQueue: { leg: TradeLeg; qtyLeft: number }[] = buys.map((leg) => ({
       leg,
       qtyLeft: leg.quantity,
     }));

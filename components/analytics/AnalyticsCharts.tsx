@@ -185,115 +185,45 @@ export function AnalyticsCharts({ trades }: AnalyticsChartsProps) {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap gap-4">
-        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-2 dark:border-green-900 dark:bg-green-950/50">
-          <span className="text-sm text-green-800 dark:text-green-200">Win streak</span>
-          <p className="text-xl font-bold text-green-700 dark:text-green-300">{streak.wins}</p>
+    <div className="mx-auto max-w-6xl">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
+        <div className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm dark:border-green-900 dark:bg-green-950/50 md:col-span-3">
+          <p className="text-xs font-medium uppercase tracking-wide text-green-800 dark:text-green-200">Win streak</p>
+          <p className="mt-2 text-3xl font-bold text-green-700 dark:text-green-300">{streak.wins}</p>
         </div>
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 dark:border-red-900 dark:bg-red-950/50">
-          <span className="text-sm text-red-800 dark:text-red-200">Loss streak</span>
-          <p className="text-xl font-bold text-red-700 dark:text-red-300">{streak.losses}</p>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm dark:border-red-900 dark:bg-red-950/50 md:col-span-3">
+          <p className="text-xs font-medium uppercase tracking-wide text-red-800 dark:text-red-200">Loss streak</p>
+          <p className="mt-2 text-3xl font-bold text-red-700 dark:text-red-300">{streak.losses}</p>
         </div>
-      </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-900">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-            Long performance
-          </h3>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Trades where you were net long (buy first, sell later).
-          </p>
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:col-span-3">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Long</h3>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Buy first</p>
           <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            <div>
-              <dt className="text-gray-500 dark:text-gray-400">Total trades</dt>
-              <dd className="font-semibold text-gray-900 dark:text-white">{longShort.long.total}</dd>
-            </div>
-            <div>
-              <dt className="text-gray-500 dark:text-gray-400">Win trades</dt>
-              <dd className="font-semibold text-green-600 dark:text-green-400">
-                {longShort.long.wins}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-gray-500 dark:text-gray-400">Loss trades</dt>
-              <dd className="font-semibold text-red-600 dark:text-red-400">
-                {longShort.long.losses}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-gray-500 dark:text-gray-400">Win rate</dt>
-              <dd className="font-semibold text-gray-900 dark:text-white">
-                {longShort.long.winRate.toFixed(1)}%
-              </dd>
-            </div>
-            <div>
-              <dt className="text-gray-500 dark:text-gray-400">Avg P&L / trade</dt>
-              <dd className="font-semibold text-gray-900 dark:text-white">
-                {longShort.long.avgPnl.toFixed(2)}
-              </dd>
-            </div>
+            <div><dt className="text-gray-500 dark:text-gray-400">Total</dt><dd className="font-semibold text-gray-900 dark:text-white">{longShort.long.total}</dd></div>
+            <div><dt className="text-gray-500 dark:text-gray-400">Win</dt><dd className="font-semibold text-green-600 dark:text-green-400">{longShort.long.wins}</dd></div>
+            <div><dt className="text-gray-500 dark:text-gray-400">Loss</dt><dd className="font-semibold text-red-600 dark:text-red-400">{longShort.long.losses}</dd></div>
+            <div><dt className="text-gray-500 dark:text-gray-400">Win%</dt><dd className="font-semibold text-gray-900 dark:text-white">{longShort.long.winRate.toFixed(1)}%</dd></div>
           </dl>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-900">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-            Short performance
-          </h3>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Trades where you were net short (sell/short first, buy back later).
-          </p>
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:col-span-3">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Short</h3>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Sell first</p>
           <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            <div>
-              <dt className="text-gray-500 dark:text-gray-400">Total trades</dt>
-              <dd className="font-semibold text-gray-900 dark:text-white">
-                {longShort.short.total}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-gray-500 dark:text-gray-400">Win trades</dt>
-              <dd className="font-semibold text-green-600 dark:text-green-400">
-                {longShort.short.wins}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-gray-500 dark:text-gray-400">Loss trades</dt>
-              <dd className="font-semibold text-red-600 dark:text-red-400">
-                {longShort.short.losses}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-gray-500 dark:text-gray-400">Win rate</dt>
-              <dd className="font-semibold text-gray-900 dark:text-white">
-                {longShort.short.winRate.toFixed(1)}%
-              </dd>
-            </div>
-            <div>
-              <dt className="text-gray-500 dark:text-gray-400">Avg P&L / trade</dt>
-              <dd className="font-semibold text-gray-900 dark:text-white">
-                {longShort.short.avgPnl.toFixed(2)}
-              </dd>
-            </div>
+            <div><dt className="text-gray-500 dark:text-gray-400">Total</dt><dd className="font-semibold text-gray-900 dark:text-white">{longShort.short.total}</dd></div>
+            <div><dt className="text-gray-500 dark:text-gray-400">Win</dt><dd className="font-semibold text-green-600 dark:text-green-400">{longShort.short.wins}</dd></div>
+            <div><dt className="text-gray-500 dark:text-gray-400">Loss</dt><dd className="font-semibold text-red-600 dark:text-red-400">{longShort.short.losses}</dd></div>
+            <div><dt className="text-gray-500 dark:text-gray-400">Win%</dt><dd className="font-semibold text-gray-900 dark:text-white">{longShort.short.winRate.toFixed(1)}%</dd></div>
           </dl>
         </div>
-      </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
-          <h3 className="mb-4 font-medium">Win / Loss</h3>
-          <div className="h-64">
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-gray-50 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:col-span-5">
+          <h3 className="text-sm font-semibold">Win / Loss</h3>
+          <div className="mt-4 h-72 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={winLossData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label={({ name, value }) => `${name}: ${value}`}
-                >
+                <Pie data={winLossData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90}>
                   {winLossData.map((e, i) => (
                     <Cell key={i} fill={e.color} />
                   ))}
@@ -304,81 +234,99 @@ export function AnalyticsCharts({ trades }: AnalyticsChartsProps) {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
-          <h3 className="mb-4 font-medium">Avg Winner vs Avg Loser</h3>
-          <div className="h-64">
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-gray-50 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:col-span-7">
+          <h3 className="text-sm font-semibold">Avg Winner vs Avg Loser</h3>
+          <div className="mt-4 h-72 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={avgCompare} layout="vertical" margin={{ left: 100 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+              <BarChart data={avgCompare} layout="vertical" margin={{ left: 110, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-800" />
                 <XAxis type="number" />
-                <YAxis type="category" dataKey="name" width={90} />
+                <YAxis type="category" dataKey="name" width={100} />
                 <Tooltip formatter={(v: number) => [v.toFixed(2), "P&L"]} />
-                <Bar dataKey="value" name="P&L" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="value" name="P&L" radius={[0, 6, 6, 0]}>
+                  {avgCompare.map((e, i) => (
+                    <Cell key={i} fill={e.fill} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-      </div>
 
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
-        <h3 className="mb-4 font-medium">P&L by symbol (top 10)</h3>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={bySymbol} layout="vertical" margin={{ left: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis type="category" dataKey="symbol" width={56} tick={{ fontSize: 12 }} />
-              <Tooltip formatter={(v: number) => [v.toFixed(2), "P&L"]} />
-              <Bar dataKey="pnl" name="P&L" fill="#16a34a" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
-          <h3 className="mb-4 font-medium">P&L by day of week</h3>
-          <div className="h-64">
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-gray-50 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:col-span-7">
+          <h3 className="text-sm font-semibold">P&L by symbol (top 10)</h3>
+          <div className="mt-4 h-80 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={byDay}>
-                <CartesianGrid strokeDasharray="3 3" />
+              <BarChart data={bySymbol} layout="vertical" margin={{ left: 70, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-800" />
+                <XAxis type="number" />
+                <YAxis type="category" dataKey="symbol" width={60} tick={{ fontSize: 12 }} />
+                <Tooltip formatter={(v: number) => [v.toFixed(2), "P&L"]} />
+                <Bar dataKey="pnl" name="P&L" radius={[0, 6, 6, 0]}>
+                  {bySymbol.map((row, i) => (
+                    <Cell key={i} fill={row.pnl < 0 ? LOSS_COLOR : WIN_COLOR} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-gray-50 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:col-span-5">
+          <h3 className="text-sm font-semibold">Segment breakdown</h3>
+          <div className="mt-4 h-80 w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={bySegment} layout="vertical" margin={{ left: 90, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-800" />
+                <XAxis type="number" />
+                <YAxis type="category" dataKey="segment" width={80} />
+                <Tooltip formatter={(v: number) => [v.toFixed(2), "P&L"]} />
+                <Bar dataKey="pnl" name="P&L" radius={[0, 6, 6, 0]}>
+                  {bySegment.map((row, i) => (
+                    <Cell key={i} fill={row.pnl < 0 ? LOSS_COLOR : WIN_COLOR} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-gray-50 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:col-span-6">
+          <h3 className="text-sm font-semibold">P&L by day of week</h3>
+          <div className="mt-4 h-72 w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={byDay} margin={{ left: 10, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-800" />
                 <XAxis dataKey="day" />
                 <YAxis />
                 <Tooltip formatter={(v: number) => [v.toFixed(2), "P&L"]} />
-                <Bar dataKey="pnl" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="pnl" radius={[6, 6, 0, 0]}>
+                  {byDay.map((row, i) => (
+                    <Cell key={i} fill={row.pnl < 0 ? LOSS_COLOR : WIN_COLOR} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
-          <h3 className="mb-4 font-medium">P&L by time of day</h3>
-          <div className="h-64">
+        <div className="min-w-0 rounded-2xl border border-gray-200 bg-gray-50 p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:col-span-6">
+          <h3 className="text-sm font-semibold">P&L by time of day</h3>
+          <div className="mt-4 h-72 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={byTime}>
-                <CartesianGrid strokeDasharray="3 3" />
+              <BarChart data={byTime} margin={{ left: 10, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-800" />
                 <XAxis dataKey="period" tick={{ fontSize: 11 }} />
                 <YAxis />
                 <Tooltip formatter={(v: number) => [v.toFixed(2), "P&L"]} />
-                <Bar dataKey="pnl" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="pnl" radius={[6, 6, 0, 0]}>
+                  {byTime.map((row, i) => (
+                    <Cell key={i} fill={row.pnl < 0 ? LOSS_COLOR : WIN_COLOR} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
-      </div>
-
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
-        <h3 className="mb-4 font-medium">Segment breakdown (EQ vs FO)</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={bySegment}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="segment" />
-              <YAxis />
-              <Tooltip formatter={(v: number) => [v.toFixed(2), "P&L"]} />
-              <Bar dataKey="pnl" name="P&L" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
         </div>
       </div>
     </div>

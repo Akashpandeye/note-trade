@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { totalPnl, type TradeForStats } from "@/lib/calcPnl";
+import { type TradeForStats } from "@/lib/calcPnl";
 
 interface EquityCurveProps {
   trades: TradeForStats[];
